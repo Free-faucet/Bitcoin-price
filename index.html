@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bitcoin Price Tracker & Kalkulator Profit</title>
+<title>Bitcoin Profit Calculator</title>
 
 <style>
 body {
   font-family: Arial, sans-serif;
   background: #0f172a;
   color: #fff;
-  margin: 0;
   padding: 20px;
 }
 .container {
@@ -20,36 +19,31 @@ body {
   padding: 20px;
   border-radius: 12px;
 }
-h1 { text-align: center; }
+h1, h2 { text-align: center; }
 .card {
   background: #0f172a;
   padding: 15px;
   border-radius: 10px;
   margin-bottom: 20px;
 }
-input, button {
+input, select {
   width: 100%;
   padding: 10px;
   margin: 8px 0;
   border-radius: 6px;
   border: none;
 }
-button {
-  background: #f59e0b;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-}
 .result {
   font-weight: bold;
   margin-top: 10px;
+  font-size: 16px;
 }
 .price {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: bold;
 }
 .small {
-  font-size: 14px;
+  font-size: 13px;
   color: #cbd5e1;
 }
 </style>
@@ -59,66 +53,82 @@ button {
 
 <div class="container">
 
-<h1>Bitcoin Price Tracker</h1>
+<h1>Bitcoin Price & Profit Calculator</h1>
 
 <div class="card">
-  <div class="price">Harga BTC (USD): <span id="btcUsd">Loading...</span></div>
-  <div class="price">Harga BTC (IDR): <span id="btcIdr">Loading...</span></div>
+  <div class="price">Harga BTC USD: <span id="btcUsd">Loading...</span></div>
+  <div class="price">Harga BTC IDR: <span id="btcIdr">Loading...</span></div>
   <div class="small">Update otomatis setiap 60 detik</div>
 </div>
 
-<h2>Kalkulator Profit Bitcoin</h2>
+<h2>Kalkulator Keuntungan</h2>
 
 <div class="card">
-  <label>Harga Beli (USD)</label>
-  <input type="number" id="buyPrice" placeholder="Contoh: 30000">
 
-  <label>Jumlah BTC</label>
-  <input type="number" id="amount" placeholder="Contoh: 0.1">
+<label>Pilih Mata Uang</label>
+<select id="currency">
+  <option value="usd">USD</option>
+  <option value="idr">IDR</option>
+</select>
 
-  <label>Harga Jual / Harga Sekarang (USD)</label>
-  <input type="number" id="sellPrice" placeholder="Contoh: 45000">
+<label>Modal Investasi</label>
+<input type="number" id="modal" placeholder="Contoh: 1000">
 
-  <button onclick="calculate()">Hitung Profit</button>
+<label>Harga Beli BTC</label>
+<input type="number" id="buyPrice" placeholder="Harga saat beli">
 
-  <div class="result" id="output"></div>
+<label>Harga Sekarang / Harga Jual</label>
+<input type="number" id="currentPrice" placeholder="Harga saat ini">
+
+<div class="result" id="output"></div>
+
 </div>
 
 </div>
 
 <script>
+let liveUSD = 0;
+let liveIDR = 0;
+
 async function fetchBTC() {
   const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,idr");
   const data = await response.json();
 
-  const usd = data.bitcoin.usd;
-  const idr = data.bitcoin.idr;
+  liveUSD = data.bitcoin.usd;
+  liveIDR = data.bitcoin.idr;
 
-  document.getElementById("btcUsd").innerText = "$" + usd.toLocaleString();
-  document.getElementById("btcIdr").innerText = "Rp " + idr.toLocaleString();
+  document.getElementById("btcUsd").innerText = "$" + liveUSD.toLocaleString();
+  document.getElementById("btcIdr").innerText = "Rp " + liveIDR.toLocaleString();
 }
 
 function calculate() {
+  const currency = document.getElementById("currency").value;
+  const modal = parseFloat(document.getElementById("modal").value);
   const buy = parseFloat(document.getElementById("buyPrice").value);
-  const amount = parseFloat(document.getElementById("amount").value);
-  const sell = parseFloat(document.getElementById("sellPrice").value);
+  const current = parseFloat(document.getElementById("currentPrice").value);
 
-  if (isNaN(buy) || isNaN(amount) || isNaN(sell)) {
-    document.getElementById("output").innerText = "Isi semua kolom dengan benar.";
+  if (isNaN(modal) || isNaN(buy) || isNaN(current)) {
+    document.getElementById("output").innerText = "";
     return;
   }
 
-  const modal = buy * amount;
-  const value = sell * amount;
-  const profit = value - modal;
+  const btcAmount = modal / buy;
+  const currentValue = btcAmount * current;
+  const profit = currentValue - modal;
   const percent = ((profit / modal) * 100).toFixed(2);
 
+  const symbol = currency === "usd" ? "$" : "Rp ";
+
   document.getElementById("output").innerHTML =
-    "Modal: $" + modal.toLocaleString() + "<br>" +
-    "Nilai Saat Ini: $" + value.toLocaleString() + "<br>" +
-    "Profit / Loss: $" + profit.toLocaleString() + "<br>" +
+    "Jumlah BTC: " + btcAmount.toFixed(6) + " BTC<br>" +
+    "Nilai Sekarang: " + symbol + currentValue.toLocaleString() + "<br>" +
+    "Keuntungan / Kerugian: " + symbol + profit.toLocaleString() + "<br>" +
     "Return: " + percent + "%";
 }
+
+document.querySelectorAll("input, select").forEach(el => {
+  el.addEventListener("input", calculate);
+});
 
 fetchBTC();
 setInterval(fetchBTC, 60000);
