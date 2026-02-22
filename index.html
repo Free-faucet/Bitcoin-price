@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bitcoin Price & Profit Calculator</title>
 
-<meta name="description" content="Kalkulator keuntungan Bitcoin real-time dengan harga live USD dan IDR. Untuk analisis dan tools lengkap, kunjungi CryptoKita.">
+<meta name="description" content="Kalkulator keuntungan Bitcoin real-time dengan harga live USD dan IDR. Hitung profit atau rugi investasi BTC secara instan.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://bitcoinprice.my.id/">
 
 <style>
 body {
@@ -61,6 +63,12 @@ input, select {
 .footer-link a:hover {
   opacity: 0.9;
 }
+.seo-text {
+  margin-top: 30px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
 </style>
 </head>
 
@@ -76,7 +84,7 @@ input, select {
   <div class="small">Update otomatis setiap 60 detik</div>
 </div>
 
-<h2>Kalkulator Keuntungan</h2>
+<h2>Kalkulator Keuntungan Bitcoin</h2>
 
 <div class="card">
 
@@ -99,9 +107,22 @@ input, select {
 
 </div>
 
-<div class="footer-link">
-  Untuk analisis mendalam, edukasi crypto, dan tools tambahan seperti DCA & simulasi mining,
-  kunjungi <a href="https://www.cryptokita.com" target="_blank">CryptoKita.com</a>
+<div class="seo-text">
+<h2>Apa Itu Bitcoin Profit Calculator?</h2>
+<p>
+Bitcoin Profit Calculator adalah alat sederhana untuk menghitung estimasi keuntungan atau kerugian investasi Bitcoin berdasarkan harga beli dan harga saat ini. 
+Dengan memasukkan modal awal serta harga pembelian, Anda dapat mengetahui berapa jumlah BTC yang dimiliki dan berapa nilainya saat ini.
+</p>
+
+<p>
+Perhitungan ini membantu investor memahami potensi return sebelum mengambil keputusan. 
+Namun perlu diingat bahwa pasar kripto bersifat volatil dan harga dapat berubah dengan cepat.
+</p>
+
+<p>
+Untuk edukasi lebih mendalam mengenai strategi seperti DCA, manajemen risiko, dan analisis pasar kripto,
+Anda dapat mengunjungi <a href="https://www.cryptokita.com" target="_blank">CryptoKita.com</a>.
+</p>
 </div>
 
 </div>
@@ -111,14 +132,19 @@ let liveUSD = 0;
 let liveIDR = 0;
 
 async function fetchBTC() {
-  const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,idr");
-  const data = await response.json();
+  try {
+    const response = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd,idr");
+    const data = await response.json();
 
-  liveUSD = data.bitcoin.usd;
-  liveIDR = data.bitcoin.idr;
+    liveUSD = data.bitcoin.usd;
+    liveIDR = data.bitcoin.idr;
 
-  document.getElementById("btcUsd").innerText = "$" + liveUSD.toLocaleString();
-  document.getElementById("btcIdr").innerText = "Rp " + liveIDR.toLocaleString();
+    document.getElementById("btcUsd").innerText = "$" + liveUSD.toLocaleString();
+    document.getElementById("btcIdr").innerText = "Rp " + liveIDR.toLocaleString();
+  } catch (error) {
+    document.getElementById("btcUsd").innerText = "Error";
+    document.getElementById("btcIdr").innerText = "Error";
+  }
 }
 
 function calculate() {
